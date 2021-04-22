@@ -1,0 +1,62 @@
+RewriteEngine on
+RewriteCond %{REQUEST_URI} ^/$
+RewriteRule (.*) /bahmni/home [R=301,L]
+
+# OpenELIS
+ProxyPass /openelis http://openelis:8080/openelis
+ProxyPassReverse /openelis http://openelis:8080/openelis
+
+# OpenMRS
+ProxyPass /openmrs http://openmrs:8080/openmrs
+ProxyPassReverse /openmrs http://openmrs:8080/openmrs
+
+# Bahmni Apps
+# Bahmni Apps requires to lookup the server date. Redirecting calls to "cgi-bin/systemdate".
+ProxyPass /cgi-bin/systemdate http://bahmniapps:8900/cgi-bin/systemdate
+ProxyPass /bahmni http://bahmniapps:8900
+ProxyPassReverse /bahmni http://bahmniapps:8900
+
+# Bahmni Config
+ProxyPass /bahmni_config http://bahmni-config:8901
+ProxyPassReverse /bahmni_config http://bahmni-config:8901
+
+# Implementer Interface
+ProxyPass /implementer-interface http://implementer-interface:8902/implementer-interface
+ProxyPassReverse /implementer-interface http://implementer-interface:8902/implementer-interface
+
+# Appointments
+ProxyPass /appointments http://appointments:8903/appointments
+ProxyPassReverse /appointments http://appointments:8903/appointments
+
+# Bahmni Home
+ProxyPass /document_images http://bahmni-home:8904/document_images
+ProxyPassReverse /document_images http://bahmni-home:8904/document_images
+#
+ProxyPass /clinical_forms http://bahmni-home:8904/clinical_forms
+ProxyPassReverse /clinical_forms http://bahmni-home:8904/clinical_forms
+#
+ProxyPass /patient_images http://bahmni-home:8904/patient_images
+ProxyPassReverse /patient_images http://bahmni-home:8904/patient_images
+#
+ProxyPass /reports http://bahmni-home:8904/reports
+ProxyPassReverse /reports http://bahmni-home:8904/reports
+#
+ProxyPass /pacs_images http://bahmni-home:8904/pacs_images
+ProxyPassReverse /pacs_images http://bahmni-home:8904/pacs_images
+#
+ProxyPass /uploaded_results http://bahmni-home:8904/uploaded_results
+ProxyPassReverse /uploaded_results http://bahmni-home:8904/uploaded_results
+#
+ProxyPass /uploaded-files http://bahmni-home:8904/uploaded-files
+ProxyPassReverse /uploaded-files http://bahmni-home:8904/uploaded-files
+
+# Others
+Redirect permanent  /home  /bahmni/home/
+
+# Bahmni Reports
+ProxyPass /bahmnireports http://bahmni-reports:8080/bahmni-reports
+ProxyPassReverse /bahmnireports http://bahmni-reports:8080/bahmni-reports
+# Rewrite the OpenMRS Session Cookie as reporting_session Cookie for Bahmni Reports
+RewriteCond %{REQUEST_URI} ^/openmrs*
+RewriteCond %{HTTP_COOKIE} ^.*JSESSIONID=([^;]+)
+RewriteRule ^.*$ - [CO=reporting_session:%1:%{SERVER_NAME}:86400:/:false:true]
