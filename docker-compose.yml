@@ -1,6 +1,32 @@
 version: '3.8'
 
 services:
+  bahmniapps:
+    build:
+      args:
+        TIMEZONE: "${TIMEZONE}"
+      context: bahmniapps/
+
+    # TODO continue here, the test command worked in the afternoon when ssh-ing
+    # into the bahmniapps container (yay) but no longer in the evening (nay).
+    #
+    healthcheck:
+      test: curl -f http://localhost:8900/home/index.html
+      timeout: 20s
+    networks:
+      bahmni:
+        aliases:
+          - bahmniapps-1
+    ports:
+      - "8900:8900"
+
+    # TODO document how to mount Bahmni configuration in the README.md file:
+    #   - Clone https://github.com/Bahmni/default-config into <folder>
+    #   - export BAHMNI_APPS_PATH=<folder>/default-config/openmrs
+    #
+    volumes:
+      - "${BAHMNI_APPS_PATH:-bahmni-apps}:/var/www"
+
   mysql:
     command: "--character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci"
     environment:
@@ -28,9 +54,17 @@ services:
       DB_USERNAME: ${MYSQL_USER:-openmrs}
       MODULE_WEB_ADMIN: 'false'
     healthcheck:
-      test: curl-f http://localhost:8080/openmrs
+      test: curl -f http://localhost:8080/openmrs
       timeout: 20s
     image: openmrs/openmrs-distro-platform:2.3.3
+
+    # TODO configure network for openmrs service. When adding openmrs to the
+    # bahmni network the openmrs service the wait-for-it.sh script run by the
+    # openmrs container fails to connect to the mysql database.
+    #
+    # networks:
+    #   bahmni:
+
     ports:
       - "8080:8080"
     restart: "always"
@@ -60,4 +94,5 @@ networks:
   bahmni:
 
 volumes:
-  proxy-tls-certs:
+  bahmni-apps: ~
+  proxy-tls-certs: ~
